@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Path Planner</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border: none;
+        }
+        .form-select, .btn {
+            background-color: #ffffff;
+            color: #000000;
+            border-radius: 20px;
+        }
+        .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+        }
+        #pathGif {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Path Planner</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <div id="result">
+                    <img id="pathGif" class="img-fluid" style="display: none;" alt="Path Animation">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-4">
+                    <form id="pathForm">
+                        <div class="mb-3">
+                            <label for="start" class="form-label">Start Node:</label>
+                            <select id="start" name="start" class="form-select" required>
+                                {% for node, name in nodes.items() %}
+                                <option value="{{ node }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="end" class="form-label">End Node:</label>
+                            <select id="end" name="end" class="form-select" required>
+                                {% for node, name in nodes.items() %}
+                                <option value="{{ node }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Plan Path</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('pathForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/plan_path', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                const img = document.getElementById('pathGif');
+                img.src = url;
+                img.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = '<p class="text-danger">An error occurred while planning the path.</p>';
+            });
+        });
+    </script>
+</body>
+</html>
